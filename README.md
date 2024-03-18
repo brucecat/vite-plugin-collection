@@ -1,0 +1,2 @@
+plugin-react-swc:使用swc打包编译react代码
+plugin-calculate-dist-size：获取打包出来的dist文件夹的目录大小
