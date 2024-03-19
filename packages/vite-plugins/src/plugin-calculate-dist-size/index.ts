@@ -1,7 +1,8 @@
 import fs from 'fs'
 import path from 'path'
+import { Plugin } from 'vite'
 
-function getFolderSize(folderPath) {
+function getFolderSize(folderPath: string): number {
   if (!fs.existsSync(folderPath) || !fs.lstatSync(folderPath).isDirectory()) {
     return 0
   }
@@ -22,23 +23,36 @@ function getFolderSize(folderPath) {
   return totalSize
 }
 
-function formatBytes(bytes, decimals = 2) {
+function formatBytes(bytes: number, decimals: number = 2): string {
   if (bytes === 0) return '0.00'
   const megabytes = bytes / (1024 * 1024)
   return megabytes.toFixed(decimals)
 }
 
-function calculateDistSizePlugin(params) {
+function calculateDistSizePlugin(): Plugin {
+  let distPath = ''
+
   return {
     name: 'calculate-dist-size',
-    enforce: 'post',
-    apply: 'build',
+    enforce: 'post' as const,
+    apply: 'build' as const,
+
+    configResolved(config) {
+      // 可以在这里获取打包输出的目录
+      const outDir = config.build.outDir
+
+      distPath = outDir
+    },
+
     closeBundle() {
-      const { distPath } = params
+      if (!distPath) {
+        console.error('Fail to get size of dist folder.')
+        return
+      }
       const distSize = getFolderSize(distPath)
       const formattedSize = formatBytes(distSize)
       console.log(`Size of dist folder: ${formattedSize} MB`)
-    },
+    }
   }
 }
 
